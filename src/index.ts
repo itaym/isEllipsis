@@ -16,31 +16,36 @@ const getValue = (element: HTMLElement, usePlaceholder:boolean): string => {
 };
 
 export const isEllipsis = (sourceElement: HTMLElement, usePlaceholder:boolean = true): number => {
-  const copiedElement: HTMLDivElement = document.createElement('DIV') as HTMLDivElement;
-  const holderElement: HTMLSpanElement = document.createElement('SPAN') as HTMLSpanElement;
+    try {
+        const copiedElement: HTMLDivElement = document.createElement('DIV') as HTMLDivElement;
+        const holderElement: HTMLSpanElement = document.createElement('SPAN') as HTMLSpanElement;
 
-  copiedElement.appendChild(holderElement);
-  document.body.appendChild(copiedElement);
+        copiedElement.appendChild(holderElement);
+        document.body.appendChild(copiedElement);
 
-  const computedStyles: CSSStyleDeclaration = copyComputedStyles(sourceElement, copiedElement);
-  const innerHtml: string = getValue(sourceElement, usePlaceholder);
+        const computedStyles: CSSStyleDeclaration = copyComputedStyles(sourceElement, copiedElement);
+        const innerHtml: string = getValue(sourceElement, usePlaceholder);
 
-  copiedElement.style.width = `${sourceElement.offsetWidth}px`;
-  copiedElement.style.height = `${sourceElement.offsetHeight}px`;
+        copiedElement.style.width = `${sourceElement.offsetWidth}px`;
+        copiedElement.style.height = `${sourceElement.offsetHeight}px`;
 
-  const scrollWidth =
-    copiedElement.scrollWidth -
-    parseInt(computedStyles.getPropertyValue('padding-left'), 10) -
-    parseInt(computedStyles.getPropertyValue('padding-right'), 10);
-  holderElement.innerHTML = innerHtml;
+        const scrollWidth =
+            copiedElement.scrollWidth -
+            parseInt(computedStyles.getPropertyValue('padding-left'), 10) -
+            parseInt(computedStyles.getPropertyValue('padding-right'), 10);
+        holderElement.innerHTML = innerHtml;
 
-  const result: number =
-    computedStyles.getPropertyValue('white-space') === 'nowrap' &&
-    computedStyles.getPropertyValue('overflow') === 'hidden' &&
-    computedStyles.getPropertyValue('text-overflow') === 'ellipsis' &&
-    holderElement.offsetWidth > scrollWidth
-      ? holderElement.offsetWidth - scrollWidth
-      : 0;
-  document.body.removeChild(copiedElement);
-  return result;
+        const result: number =
+            computedStyles.getPropertyValue('white-space') === 'nowrap' &&
+            computedStyles.getPropertyValue('overflow') === 'hidden' &&
+            computedStyles.getPropertyValue('text-overflow') === 'ellipsis' &&
+            holderElement.offsetWidth > scrollWidth
+                ? holderElement.offsetWidth - scrollWidth
+                : 0;
+        document.body.removeChild(copiedElement);
+        return result;
+    }
+    catch {
+        return 0;
+    }
 };
