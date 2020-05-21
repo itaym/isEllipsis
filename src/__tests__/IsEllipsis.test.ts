@@ -16,14 +16,14 @@ test('isEllipsis input element', () => {
 
     inputElement.value = wasItSummer;
 
-    expect(isEllipsis(inputElement)).toBe(2);
+    expect(isEllipsis(inputElement)).toBe(3);
     expect(isEllipsis(undefined as any)).toBe(0);
 
     inputElement.value = '';
     inputElement.placeholder = wasItSummer;
-    expect(isEllipsis(inputElement)).toBe(2);
+    expect(isEllipsis(inputElement)).toBe(3);
     inputElement.placeholder = '';
-    expect(isEllipsis(inputElement, false)).toBe(2);
+    expect(isEllipsis(inputElement, false)).toBe(3);
     document.body.removeChild(inputElement);
 });
 
