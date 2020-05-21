@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1590067305527" clover="3.2.0">
+  <project timestamp="1590067305527" name="All files">
+    <metrics statements="30" coveredstatements="30" conditionals="14" coveredconditionals="14" methods="4" coveredmethods="4" elements="48" coveredelements="48" complexity="0" loc="30" ncloc="30" packages="1" files="1" classes="1"/>
+    <file name="index.ts" path="C:\Users\itaym\WebStormProjects\isEllipsis\src\index.ts">
+      <metrics statements="30" coveredstatements="30" conditionals="14" coveredconditionals="14" methods="4" coveredmethods="4"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="5" type="stmt"/>
+      <line num="4" count="4" type="stmt"/>
+      <line num="5" count="4" type="stmt"/>
+      <line num="7" count="4" type="stmt"/>
+      <line num="9" count="1" type="stmt"/>
+      <line num="10" count="3" type="cond" truecount="4" falsecount="0"/>
+      <line num="12" count="1" type="stmt"/>
+      <line num="13" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="15" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="17" count="5" type="stmt"/>
+      <line num="18" count="5" type="stmt"/>
+      <line num="19" count="5" type="stmt"/>
+      <line num="20" count="5" type="stmt"/>
+      <line num="21" count="4" type="stmt"/>
+      <line num="23" count="4" type="stmt"/>
+      <line num="24" count="4" type="stmt"/>
+      <line num="25" count="4" type="stmt"/>
+      <line num="26" count="4" type="stmt"/>
+      <line num="27" count="4" type="stmt"/>
+      <line num="28" count="4" type="stmt"/>
+      <line num="29" count="4" type="stmt"/>
+      <line num="31" count="4" type="stmt"/>
+      <line num="32" count="4" type="stmt"/>
+      <line num="35" count="4" type="stmt"/>
+      <line num="38" count="4" type="stmt"/>
+      <line num="41" count="4" type="cond" truecount="4" falsecount="0"/>
+      <line num="48" count="4" type="stmt"/>
+      <line num="49" count="4" type="stmt"/>
+      <line num="52" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>

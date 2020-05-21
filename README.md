@@ -1,4 +1,7 @@
 # isEllipsis
+![Coverage Status](https://img.shields.io/badge/coverage-100%25-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+
+------------
 Find out if an HTML tag or an Input tag currently display ellipsis.
 
 ## Usage
@@ -31,3 +34,10 @@ if (isEllipsis(someInfo)) {
     console.log("ellipsis is visible");
 }
  ```
+##Have a good productive day :)
+
+If you like this package please consider donation <a href="https://paypal.me/ItayMerchav?locale.x=en_US" target="_blank">Click Here</a>
+
+---
+- **[MIT license](http://opensource.org/licenses/mit-license.php)**
+- Copyright 2015 © <a href="http://fvcproductions.com" target="_blank">FVCproductions</a>.

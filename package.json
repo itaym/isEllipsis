@@ -1,10 +1,12 @@
 {
   "name": "isellipsis",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Find out if an HTML element displays ellipsis",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "files": ["lib/**/*"],
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "test": "jest --config jestconfig.json",
     "build": "tsc",
@@ -37,5 +39,6 @@
     "tslint": "^6.1.1",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.8.3"
-  }
+  },
+  "dependencies": {}
 }
