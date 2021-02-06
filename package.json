@@ -1,6 +1,6 @@
 {
   "name": "isellipsis",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Find out if an HTML element displays ellipsis",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
