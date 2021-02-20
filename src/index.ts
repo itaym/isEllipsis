@@ -1,7 +1,26 @@
+import { TIsEllipsisFunction } from "./module";
+
+const getCorrectionValueByBrowser = ():number => {
+    const browsersNames:{[index:string]:number} = {
+        Chrome: 0,
+        Firefox: -1,
+        MSIE: 0,
+        Edge: 0,
+        Safari: 0,
+        Opera: 0,
+        YaBrowser: 0,
+    };
+    // @ts-ignore
+    const browserName:string = Object.keys(browsersNames).find(name => navigator.userAgent.indexOf(name) > -1) || 'Chrome';
+    
+    return browsersNames[browserName] as number
+}
+
 const copyComputedStyles = (source: HTMLElement, target: HTMLElement): CSSStyleDeclaration => {
   const computedStyles: CSSStyleDeclaration = window.getComputedStyle(source);
 
-  for (const computedStyle of Array.from(computedStyles)) {
+  // @ts-ignore
+    for (const computedStyle of computedStyles) {
     target.style[computedStyle as any] = computedStyles.getPropertyValue(computedStyle);
   }
   return computedStyles;
@@ -12,8 +31,11 @@ const getInputValue = (inputElement: HTMLInputElement, usePlaceholder: boolean):
 const getValue = (element: HTMLElement, usePlaceholder:boolean): string => {
   return element.tagName === 'INPUT' ? getInputValue(element as HTMLInputElement, usePlaceholder) : element.innerHTML;
 };
-export const isEllipsis = (sourceElement: HTMLElement, usePlaceholder:boolean = true): number => {
-
+export const isEllipsis:TIsEllipsisFunction = (
+    sourceElement: HTMLElement,
+    usePlaceholder:boolean = true,
+    resultType:NumberConstructor|BooleanConstructor = Number) => {
+    const browser = getCorrectionValueByBrowser();
     try {
         const copiedElement: HTMLDivElement = document.createElement('DIV') as HTMLDivElement;
         const holderElement: HTMLSpanElement = document.createElement('SPAN') as HTMLSpanElement;
@@ -33,22 +55,32 @@ export const isEllipsis = (sourceElement: HTMLElement, usePlaceholder:boolean = 
 
         const scrollWidth =
             copiedElement.scrollWidth -
-            parseInt(computedStyles.getPropertyValue('padding-left'), 10) -
-            parseInt(computedStyles.getPropertyValue('padding-right'), 10);
+            parseInt(computedStyles.getPropertyValue('padding-left') || "0", 10) -
+            parseInt(computedStyles.getPropertyValue('padding-right') || "0", 10);
         holderElement.innerHTML = innerHtml;
 
+        // noinspection PointlessArithmeticExpressionJS
         const result: number =
             computedStyles.getPropertyValue('white-space') === 'nowrap' &&
             computedStyles.getPropertyValue('overflow') === 'hidden' &&
-            computedStyles.getPropertyValue('text-overflow') === 'ellipsis' &&
-            holderElement.offsetWidth >= scrollWidth
-                ? holderElement.offsetWidth - scrollWidth + 1
-                : 0;
+            computedStyles.getPropertyValue('text-overflow') === 'ellipsis'
+                ? holderElement.offsetWidth - scrollWidth + browser
+                : holderElement.offsetWidth * -1 + 0; // adding 0 will prevent -0 !!!
         // @ts-ignore
-        document.body.removeChild(copiedElement);
-        return result;
+        document.body.removeChild(copiedElement)
+        if (resultType === Number) {
+            return result;
+        }
+        else {
+            return !(result < 0);
+        }
     }
     catch {
-        return 0;
+        if (resultType === Number) {
+            return NaN;
+        }
+        else {
+            return false;
+        }
     }
 };

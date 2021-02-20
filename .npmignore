@@ -6,3 +6,4 @@ src
 jestconfig.json
 tsconfig.json
 tslint.json
+/package-lock.json
