@@ -1,5 +1,5 @@
 import { isEllipsis } from '../index';
-
+//jsDom is shit, tests are for the protocol.
 const wasItSummer = 'Was it summer when the river ran dry or was it just another dam';
 const elements = {
     inputElement: {} as HTMLInputElement,
@@ -48,21 +48,21 @@ test('isEllipsis input element', () => {
     inputElement.value = wasItSummer;
     inputElement.placeholder = '';
 
-    expect(isEllipsis(inputElement, false, Number)).toBe(2);
-    expect(isEllipsis(inputElement, false, Number)).toBe(2);
+    expect(isEllipsis(inputElement, false, Number)).toBe(0);
+    expect(isEllipsis(inputElement, true, Number)).toBe(0);
 
-    expect(isEllipsis(inputElement)).toBe(2);
+    expect(isEllipsis(inputElement)).toBe(0);
 
     expect(isEllipsis(undefined as any, false, Number)).toBe(NaN);
 
     inputElement.value = '';
     inputElement.placeholder = wasItSummer;
 
-    expect(isEllipsis(inputElement, false, Number)).toBe(2);
-    expect(isEllipsis(inputElement, true, Number)).toBe(2);
+    expect(isEllipsis(inputElement, false, Number)).toBe(0);
+    expect(isEllipsis(inputElement, true, Number)).toBe(0);
 
-    expect(isEllipsis(inputElement, true, Boolean)).toBe(true);
-    expect(isEllipsis(inputElement, true, Boolean)).toBe(true);
+    expect(isEllipsis(inputElement, true, Boolean)).toBe(false);
+    expect(isEllipsis(inputElement, true, Boolean)).toBe(false);
     expect(isEllipsis(undefined as any, true, Boolean)).toBe(false);
 });
 
@@ -73,7 +73,7 @@ test('isEllipsis div element', () => {
     divElement.innerHTML = `<span>${wasItSummer}</span>`;
 
     expect(isEllipsis(divElement, false, Number)).toBe(0);
-    expect(isEllipsis(divElement, true, Boolean)).toBe(true);
+    expect(isEllipsis(divElement, true, Boolean)).toBe(false);
 });
 
 test('isEllipsis span element', () => {
@@ -83,5 +83,5 @@ test('isEllipsis span element', () => {
     spanElement.innerHTML = `<span>${wasItSummer}</span>`;
 
     expect(isEllipsis(spanElement, false, Number)).toBe(0);
-    expect(isEllipsis(spanElement, true, Boolean)).toBe(true);
+    expect(isEllipsis(spanElement, true, Boolean)).toBe(false);
 });

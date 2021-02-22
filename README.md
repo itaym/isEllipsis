@@ -10,7 +10,7 @@ Find out if an HTML tag or an Input tag currently display ellipsis.
 - let value = isEllipsis(HTMLElement, usePlaceholder, returnType);
 ##### Variables
 - value : According the return type:
-  - Number: Zero or greater indicates an ellipsis is shown. (NaN indiates error).
+  - Number: Greater from zero indicates an ellipsis is shown. (NaN indiates error).
   - Boolean: true indicates an ellipsis is shown.
 - HTMLElement : Any HTML element such as DIV or Input etc.
 - usePlaceholder : (Optional) Indicates whenever to use the placeholder (default is true).
@@ -33,7 +33,7 @@ So, if the returned value is zero or greater or true the HTMLElement displays el
 <input id="some-info" type="text" placeholder="This is a long placeholder with ellipsis" />
 <script>
     let someInfo = document.getElementById("some-info");
-    if (isEllipsis(someInfo) >= 0) {
+    if (isEllipsis(someInfo) > 0) {
         console.log("ellipsis is visible");
     }
     // or ...
@@ -42,8 +42,11 @@ So, if the returned value is zero or greater or true the HTMLElement displays el
     }
 </script>    
  ```
+## Importent Note and explanation
+For the `isEllipsis` to work correctly. You must set your element `width` to an `integer` and `box-sizing` to  `border-box`. Otherwise there is a margin of error of 1 pixel!!! This due the fact that an `element` properties that `isEllipsis` relays upon such as `clientWidth`, `scrollWidth` and `offsetWidth` are integers. Even if the rendered width of the element is something like `120.8px` (which happens a lot), the `browser` rounds those numbers and `isEllipsis` has no way knowing it.
+If the content of the `element` **overflows** by more the correct answer will be returned for sure. As I tested it a lot, if you do like mentioned above, it will work 100% correctly.
 
-##Have a good productive day :)
+## Have a good productive day :)
 
 If you like this package please consider donation <a href="https://paypal.me/ItayMerchav?locale.x=en_US" target="_blank">Click Here</a>
 
