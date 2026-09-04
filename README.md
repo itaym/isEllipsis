@@ -1,68 +1,99 @@
 # isEllipsis
-![Coverage Status](https://img.shields.io/badge/coverage-100%25-green) ![License](https://img.shields.io/badge/license-MIT-blue)
-[![Rate on Openbase](https://badges.openbase.com/js/rating/isellipsis.svg)](https://openbase.com/js/isellipsis?utm_source=embedded&utm_medium=badge&utm_campaign=rate-badge)
 
-------------
-Find out if an HTML tag or an Input tag currently display ellipsis.
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## Usage
-```js
-import { isEllipsis } from "isellipsis";
-const value = isEllipsis(element, usePlaceholder, returnType);
+Find out if an HTML element is **currently** truncating its text with an ellipsis (`…`) - a `DIV`, a `SPAN`, an `INPUT`, a `-webkit-line-clamp` block, anything.
+
 ```
-##### Arguments
-- `element` : any HTML element - a `DIV`, `SPAN`, `INPUT`, `TEXTAREA`, etc.
-- `usePlaceholder` : *(optional, inputs only, default `true`)* measure the placeholder when the field is empty.
-- `returnType` : *(optional, default `Number`)* the `Number` or `Boolean` constructor.
-
-##### Return value
-- `Number` : the overflow in CSS pixels - a value `> 0` means an ellipsis is shown; `NaN` on error.
-- `Boolean` : `true` when an ellipsis is shown (overflow greater than ~0.5px).
-
-#### Overall
-`isEllipsis` reports whether the element is **currently** truncating its text with an ellipsis (`…`). It returns a positive number / `true` only when all of the following hold:
-- `text-overflow` is `ellipsis` (the default `clip` cuts text with no `…`);
-- there is a clipping context - `overflow` is not `visible` (inputs clip their own text regardless);
-- the text actually overflows the content box, **or** `-webkit-line-clamp` is set and the content exceeds it.
-
-Measurement is done without cloning the element or mutating the DOM: non-input elements are measured with a `Range`, inputs with canvas text metrics. Both give sub-pixel-accurate results, so there is no longer any need to use integer widths or `box-sizing: border-box`.
-
-#### Example
+@isellipsis/core     framework-agnostic - isEllipsis(), measureEllipsis(), observeEllipsis()
+@isellipsis/react    useIsEllipsis() hook + <EllipsisTooltip>
 ```
-<style>
-    INPUT {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 200px;
-    }
-</style>
-<input id="some-info" type="text" placeholder="This is a long placeholder with ellipsis" />
-<script>
-    let someInfo = document.getElementById("some-info");
-    if (isEllipsis(someInfo) > 0) {
-        console.log("ellipsis is visible");
-    }
-    // or ...
-    if (isEllipsis(someInfo, true, Boolean)) {
-        console.log("ellipsis is visible");
-    }
-</script>    
- ```
-## Note
-The measurement relies on the correct font being loaded. If you call `isEllipsis`
-immediately after page load, `await document.fonts.ready` first, otherwise the
-width may be computed against a fallback font.
 
-Canvas text metrics model glyph advance widths, not full text shaping, so for
-inputs the result can be off by a fraction of a pixel with unusual
-`font-feature-settings` or heavy ligatures - hence the ~0.5px tolerance on the
-boolean result.
+> **v3** is a rewrite. Detection no longer clones the element or copies every
+> computed style: non-input elements are measured with a `Range`, inputs with
+> canvas text metrics. Both are sub-pixel accurate, so the old "use integer
+> widths and `box-sizing: border-box`" caveat is gone. The result is also gated
+> on an ellipsis *actually being painted* (`text-overflow: ellipsis`, a clipping
+> context), and `-webkit-line-clamp` is detected. The package moved from the
+> unscoped `isellipsis` to the scoped `@isellipsis/*` family.
 
-## Have a good productive day :)
+## `@isellipsis/core`
 
-If you like this package please consider donation <a href="https://paypal.me/ItayMerchav?locale.x=en_US" target="_blank">Click Here</a>
+```bash
+npm i @isellipsis/core
+```
 
----
-- **[MIT license](http://opensource.org/licenses/mit-license.php)**
-- Copyright © 2020 Itay Merchav
+```ts
+import { isEllipsis, measureEllipsis, observeEllipsis } from '@isellipsis/core';
+
+// classic, one-shot
+isEllipsis(el);                       // overflow in px, > 0 means truncated (NaN on error)
+isEllipsis(el, true, Boolean);        // → boolean
+
+// richer, one-shot
+measureEllipsis(el);                  // { truncated, overflow, axis: 'x' | 'y' | null }
+
+// reactive - fires on resize, text/attr mutation, and web-font load
+const stop = observeEllipsis(el, ({ truncated, overflow, axis }) => { … });
+stop();
+```
+
+An element reports truncated only when **all** hold: `text-overflow` is `ellipsis`
+(the default `clip` cuts with no `…`); there is a clipping context (`overflow`
+not `visible`; inputs clip their own text); and the text overflows the content
+box, or `-webkit-line-clamp` is set and exceeded.
+
+`await document.fonts.ready` before measuring right after page load, or the width
+is computed against a fallback font.
+
+## `@isellipsis/react`
+
+```bash
+npm i @isellipsis/react
+```
+
+```tsx
+import { useIsEllipsis, EllipsisTooltip } from '@isellipsis/react';
+
+function Label({ text }: { text: string }) {
+  const { ref, truncated } = useIsEllipsis<HTMLDivElement>();
+  return (
+    <div ref={ref} className="truncate" title={truncated ? text : undefined}>
+      {text}
+    </div>
+  );
+}
+
+// or the batteries-included component - native title only while clipped
+<EllipsisTooltip className="truncate">{text}</EllipsisTooltip>;
+```
+
+## Repo layout
+
+| path | what |
+| --- | --- |
+| `packages/core` | `@isellipsis/core` |
+| `packages/react` | `@isellipsis/react` |
+| `playground/` | Vite + React live demo (`npm run playground`) |
+| `e2e/` | Playwright - `core.spec.ts` (visual-oracle) + `react.spec.ts` (drives the playground) |
+
+```bash
+npm install
+npm run build          # tsup: ESM + CJS + IIFE + d.ts
+npm test               # Vitest (happy-dom) - unit / protocol
+npm run test:e2e       # Playwright (Chromium) - real layout
+npm run playground     # http://localhost:4173
+```
+
+### Testing an ellipsis without a DOM flag
+
+There is no `element.isTruncated`, so the e2e suite uses a visual oracle:
+`text-overflow: ellipsis` only changes pixels when the text overflows, so a
+screenshot of the element differs from a screenshot of the same element with
+`text-overflow: clip` **iff** an ellipsis is really on screen (for line-clamp the
+clamp count is toggled instead). Every case asserts the library's answer matches
+that.
+
+## License
+
+MIT © 2020 Itay Merchav

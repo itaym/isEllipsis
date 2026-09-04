@@ -14,22 +14,27 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
 
-      # package-lock.json is gitignored, so `npm ci` is not available.
-      - name: Install dependencies
-        run: npm install
+      - run: npm ci
 
-      - name: Build
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build packages
         run: npm run build
 
-      - name: Unit tests (jsdom)
+      - name: Unit tests (Vitest)
         run: npm test
 
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
 
-      - name: Browser tests (Chromium)
+      - name: Build playground
+        run: npm run playground:build
+
+      - name: Browser tests (Playwright)
         run: npx playwright test
 
       - name: Upload Playwright report

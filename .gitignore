@@ -1,8 +1,17 @@
 .idea
 node_modules
-/lib
-/package-lock.json
+
+# build output
+dist
+packages/*/dist
+playground/dist
+
+# caches
+.vite
+*.tsbuildinfo
 coverage
+
+# playwright
 /test-results
 /playwright-report
 /blob-report

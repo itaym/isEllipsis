@@ -1,9 +1,0 @@
-.idea
-node_modules
-coverage
-src
-.prettierrc
-jestconfig.json
-tsconfig.json
-tslint.json
-/package-lock.json

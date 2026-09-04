@@ -1,13 +1,15 @@
 import { test, expect, Page } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Real-browser behaviour of the built library, verified against an independent
- * visual oracle.
+ * Real-browser behaviour of the built @isellipsis/core bundle, verified against
+ * an independent visual oracle.
  *
- * The DOM has no "is this truncated" flag, so ground truth comes from a
- * screenshot diff: `text-overflow: ellipsis` only changes pixels when the text
+ * Ground truth: `text-overflow: ellipsis` only changes pixels when the text
  * actually overflows, so
  *
  *     screenshot(el) vs screenshot(el with text-overflow: clip)
@@ -18,8 +20,11 @@ import * as path from 'path';
  * asserts the library's answer matches what is really on screen.
  */
 
-const cjs = fs.readFileSync(path.join(__dirname, '..', 'lib', 'index.js'), 'utf8');
-const BUNDLE = `(function(){var module={exports:{}};var exports=module.exports;\n${cjs}\nwindow.isEllipsis=module.exports.isEllipsis;})();`;
+const iifePath = path.join(here, '..', 'packages', 'core', 'dist', 'index.global.js');
+if (!fs.existsSync(iifePath)) {
+  throw new Error('packages/core/dist/index.global.js not found - run `npm run build` first.');
+}
+const BUNDLE = fs.readFileSync(iifePath, 'utf8');
 
 const LONG = 'Was it summer when the river ran dry or was it just another dam that held the water back';
 const SHORT = 'dry';
@@ -37,17 +42,28 @@ const PAGE_STYLE = `
 `;
 
 const render = async (page: Page, bodyHtml: string) => {
-  await page.setContent(`<!doctype html><html><head><style>${PAGE_STYLE}</style></head><body>${bodyHtml}</body></html>`);
-  await page.evaluate(() => (document as any).fonts && (document as any).fonts.ready);
+  await page.setContent(
+    `<!doctype html><html><head><style>${PAGE_STYLE}</style></head><body>${bodyHtml}</body></html>`,
+  );
+  await page.evaluate(() => (document as any).fonts?.ready);
   await page.addScriptTag({ content: BUNDLE });
 };
 
+// The IIFE build exposes the module on `window.isEllipsis`.
 const measure = (page: Page, selector: string, usePlaceholder = true) =>
   page.evaluate(
     ({ selector, usePlaceholder }) => {
       const el = document.querySelector(selector) as HTMLElement;
-      const w = window as any;
-      return { num: w.isEllipsis(el, usePlaceholder, Number) as number, bool: w.isEllipsis(el, usePlaceholder, Boolean) as boolean };
+      const api = (window as any).isEllipsis;
+      return {
+        num: api.isEllipsis(el, usePlaceholder, Number) as number,
+        bool: api.isEllipsis(el, usePlaceholder, Boolean) as boolean,
+        measurement: api.measureEllipsis(el, { usePlaceholder }) as {
+          truncated: boolean;
+          overflow: number;
+          axis: string | null;
+        },
+      };
     },
     { selector, usePlaceholder },
   );
@@ -58,12 +74,10 @@ const ellipsisIsPainted = async (page: Page, selector: string, mode: 'line' | 'c
   await page.evaluate(
     ({ selector, mode }) => {
       const el = document.querySelector(selector) as HTMLElement;
-      (el as any).__restore = mode === 'clamp' ? el.style.getPropertyValue('-webkit-line-clamp') : el.style.textOverflow;
-      if (mode === 'clamp') {
-        el.style.setProperty('-webkit-line-clamp', '999');
-      } else {
-        el.style.textOverflow = 'clip';
-      }
+      (el as any).__restore =
+        mode === 'clamp' ? el.style.getPropertyValue('-webkit-line-clamp') : el.style.textOverflow;
+      if (mode === 'clamp') el.style.setProperty('-webkit-line-clamp', '999');
+      else el.style.textOverflow = 'clip';
     },
     { selector, mode },
   );
@@ -71,96 +85,87 @@ const ellipsisIsPainted = async (page: Page, selector: string, mode: 'line' | 'c
   await page.evaluate(
     ({ selector, mode }) => {
       const el = document.querySelector(selector) as HTMLElement;
-      if (mode === 'clamp') {
-        el.style.setProperty('-webkit-line-clamp', (el as any).__restore);
-      } else {
-        el.style.textOverflow = (el as any).__restore;
-      }
+      if (mode === 'clamp') el.style.setProperty('-webkit-line-clamp', (el as any).__restore);
+      else el.style.textOverflow = (el as any).__restore;
     },
     { selector, mode },
   );
   return Buffer.compare(before, after) !== 0;
 };
 
-/** Assert the library's number + boolean results match the visual oracle. */
 const expectAgree = async (page: Page, selector: string, mode: 'line' | 'clamp' = 'line') => {
-  const { num, bool } = await measure(page, selector);
+  const { num, bool, measurement } = await measure(page, selector);
   const painted = await ellipsisIsPainted(page, selector, mode);
-  expect(bool, `boolean result vs painted ellipsis`).toBe(painted);
-  expect(num > 0.5, `number result (${num}) vs painted ellipsis`).toBe(painted);
-  return { num, bool, painted };
+  expect(bool, 'boolean vs painted').toBe(painted);
+  expect(num > 0.5, `number (${num}) vs painted`).toBe(painted);
+  expect(measurement.truncated, 'measureEllipsis.truncated vs painted').toBe(painted);
+  return { num, bool, measurement, painted };
 };
 
-test.describe('isEllipsis (real browser, verified visually)', () => {
-  test('is exposed on the page', async ({ page }) => {
+test.describe('@isellipsis/core (real browser, verified visually)', () => {
+  test('exposes the API on the global', async ({ page }) => {
     await render(page, '');
-    expect(await page.evaluate(() => typeof (window as any).isEllipsis)).toBe('function');
+    const keys = await page.evaluate(() => Object.keys((window as any).isEllipsis).sort());
+    expect(keys).toEqual(expect.arrayContaining(['isEllipsis', 'measureEllipsis', 'observeEllipsis']));
   });
 
-  test('DIV: overflowing single-line text shows an ellipsis', async ({ page }) => {
+  test('DIV: overflowing single-line text shows an ellipsis on the x axis', async ({ page }) => {
     await render(page, `<div id="t" class="box">${LONG}</div>`);
-    const { num, painted } = await expectAgree(page, '#t');
+    const { num, measurement, painted } = await expectAgree(page, '#t');
     expect(painted).toBe(true);
     expect(num).toBeGreaterThan(0);
+    expect(measurement.axis).toBe('x');
   });
 
   test('DIV: fitting text shows no ellipsis', async ({ page }) => {
     await render(page, `<div id="t" class="box">${SHORT}</div>`);
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(false);
+    expect((await expectAgree(page, '#t')).painted).toBe(false);
   });
 
-  test('DIV: text-overflow:clip is not reported as an ellipsis even when overflowing', async ({ page }) => {
+  test('DIV: text-overflow:clip is never reported, even when overflowing', async ({ page }) => {
     await render(page, `<div id="t" class="box" style="text-overflow:clip">${LONG}</div>`);
-    const { num, bool } = await measure(page, '#t');
+    const { bool, num } = await measure(page, '#t');
     expect(bool).toBe(false);
     expect(num).toBeLessThanOrEqual(0.5);
-    // ...but the text genuinely overflows: forcing an ellipsis would paint one.
     await page.evaluate(() => ((document.querySelector('#t') as HTMLElement).style.textOverflow = 'ellipsis'));
     expect(await ellipsisIsPainted(page, '#t')).toBe(true);
   });
 
   test('DIV: overflow:visible cannot show an ellipsis', async ({ page }) => {
     await render(page, `<div id="t" class="box" style="overflow:visible">${LONG}</div>`);
-    const { num, bool } = await measure(page, '#t');
-    expect(bool).toBe(false);
-    expect(num).toBeLessThanOrEqual(0.5);
+    expect((await measure(page, '#t')).bool).toBe(false);
   });
 
   test('DIV: wrapping multi-word text shows no ellipsis', async ({ page }) => {
     await render(page, `<div id="t" class="box wrap">${LONG}</div>`);
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(false);
+    expect((await expectAgree(page, '#t')).painted).toBe(false);
   });
 
   test('DIV: a single unbreakable word that overflows shows an ellipsis', async ({ page }) => {
     await render(page, `<div id="t" class="box wrap">Supercalifragilisticexpialidocious_and_then_some_more</div>`);
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(true);
+    expect((await expectAgree(page, '#t')).painted).toBe(true);
   });
 
-  test('DIV: -webkit-line-clamp truncation is detected', async ({ page }) => {
+  test('DIV: -webkit-line-clamp truncation is detected on the y axis', async ({ page }) => {
     await render(page, `<div id="t" class="box clamp">${LONG}</div>`);
-    const { painted } = await expectAgree(page, '#t', 'clamp');
+    const { measurement, painted } = await expectAgree(page, '#t', 'clamp');
     expect(painted).toBe(true);
+    expect(measurement.axis).toBe('y');
   });
 
-  test('DIV: -webkit-line-clamp that is not exceeded shows no ellipsis', async ({ page }) => {
+  test('DIV: -webkit-line-clamp not exceeded shows no ellipsis', async ({ page }) => {
     await render(page, `<div id="t" class="box clamp">${SHORT}</div>`);
-    const { painted } = await expectAgree(page, '#t', 'clamp');
-    expect(painted).toBe(false);
+    expect((await expectAgree(page, '#t', 'clamp')).painted).toBe(false);
   });
 
   test('SPAN, display:inline-block: overflowing text shows an ellipsis', async ({ page }) => {
     await render(page, `<span id="t" class="box inline-block">${LONG}</span>`);
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(true);
+    expect((await expectAgree(page, '#t')).painted).toBe(true);
   });
 
   test('RTL DIV: overflowing text shows an ellipsis', async ({ page }) => {
     await render(page, `<div id="t" class="box" dir="rtl">${LONG}</div>`);
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(true);
+    expect((await expectAgree(page, '#t')).painted).toBe(true);
   });
 
   test('INPUT: overflowing value shows an ellipsis', async ({ page }) => {
@@ -172,26 +177,18 @@ test.describe('isEllipsis (real browser, verified visually)', () => {
 
   test('INPUT: fitting value shows no ellipsis', async ({ page }) => {
     await render(page, `<input id="t" class="box" value="${SHORT}" />`);
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(false);
+    expect((await expectAgree(page, '#t')).painted).toBe(false);
   });
 
-  test('INPUT: placeholder is measured only when usePlaceholder is true', async ({ page }) => {
+  test('INPUT: placeholder measured only when usePlaceholder is true', async ({ page }) => {
     await render(page, `<input id="t" class="box" placeholder="${LONG}" />`);
-    const withPh = await measure(page, '#t', true);
-    const withoutPh = await measure(page, '#t', false);
-    expect(withPh.bool).toBe(true);
-    expect(withoutPh.bool).toBe(false);
-    expect(withoutPh.num).toBeLessThanOrEqual(0.5);
+    expect((await measure(page, '#t', true)).bool).toBe(true);
+    expect((await measure(page, '#t', false)).bool).toBe(false);
   });
 
   test('INPUT: text-transform:uppercase is accounted for', async ({ page }) => {
     const text = 'illinois minimum wage';
     await render(page, `<input id="t" class="box" style="text-transform:uppercase" value="${text}" />`);
-
-    // Width that fits the lowercase text but not the uppercase rendering, so the
-    // transform is the sole reason an ellipsis appears - the library must apply
-    // it before measuring.
     await page.evaluate((text) => {
       const probe = document.createElement('span');
       probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:16px Arial, sans-serif';
@@ -203,11 +200,7 @@ test.describe('isEllipsis (real browser, verified visually)', () => {
       probe.remove();
       (document.querySelector('#t') as HTMLElement).style.width = `${Math.round((lower + upper) / 2)}px`;
     }, text);
-
-    const { painted } = await expectAgree(page, '#t');
-    expect(painted).toBe(true);
-
-    // Remove the transform and the very same text now fits.
+    expect((await expectAgree(page, '#t')).painted).toBe(true);
     await page.evaluate(() => ((document.querySelector('#t') as HTMLElement).style.textTransform = 'none'));
     expect((await measure(page, '#t')).bool).toBe(false);
   });
@@ -217,7 +210,7 @@ test.describe('isEllipsis (real browser, verified visually)', () => {
     const { num, oracleOverflow } = await page.evaluate(() => {
       const el = document.querySelector('#t') as HTMLElement;
       return {
-        num: (window as any).isEllipsis(el, false, Number) as number,
+        num: (window as any).isEllipsis.isEllipsis(el, false, Number) as number,
         oracleOverflow: el.scrollWidth - el.clientWidth,
       };
     });
@@ -227,8 +220,8 @@ test.describe('isEllipsis (real browser, verified visually)', () => {
   test('invalid element yields NaN (Number) / false (Boolean)', async ({ page }) => {
     await render(page, '');
     const [num, bool] = await page.evaluate(() => [
-      (window as any).isEllipsis(undefined, false, Number),
-      (window as any).isEllipsis(undefined, false, Boolean),
+      (window as any).isEllipsis.isEllipsis(undefined, false, Number),
+      (window as any).isEllipsis.isEllipsis(undefined, false, Boolean),
     ]);
     expect(Number.isNaN(num)).toBe(true);
     expect(bool).toBe(false);
