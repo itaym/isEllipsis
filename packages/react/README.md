@@ -50,4 +50,8 @@ import { EllipsisTooltip } from '@isellipsis/react';
 - Peer dependency: `react >= 17`. Depends on [`isellipsis`](https://www.npmjs.com/package/isellipsis) (installed automatically).
 - `await document.fonts.ready` is handled for you by the observer.
 
+## Have a good productive day :)
+
+If you like this package please consider donation <a href="https://paypal.me/ItayMerchav?locale.x=en_US" target="_blank">Click Here</a>
+
 MIT © 2020 Itay Merchav

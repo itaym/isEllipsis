@@ -96,6 +96,10 @@ screenshot of the element differs from a screenshot of the same element with
 clamp count is toggled instead). Every case asserts the library's answer matches
 that.
 
+## Have a good productive day :)
+
+If you like this package please consider donation <a href="https://paypal.me/ItayMerchav?locale.x=en_US" target="_blank">Click Here</a>
+
 ## License
 
 MIT © 2020 Itay Merchav

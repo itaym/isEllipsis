@@ -57,4 +57,8 @@ Both are sub-pixel accurate, so integer widths and `box-sizing: border-box` are 
 - It now returns `0` / `false` when `text-overflow` isn't `ellipsis`, or a non-input has `overflow: visible` — cases where no `…` is actually painted.
 - `measureEllipsis` and `observeEllipsis` are new.
 
+## Have a good productive day :)
+
+If you like this package please consider donation <a href="https://paypal.me/ItayMerchav?locale.x=en_US" target="_blank">Click Here</a>
+
 MIT © 2020 Itay Merchav
