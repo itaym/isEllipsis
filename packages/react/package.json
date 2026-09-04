@@ -1,6 +1,6 @@
 {
   "name": "@isellipsis/react",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "React hook for detecting whether an element is truncating its text with an ellipsis",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -37,7 +37,7 @@
   "author": "Itay Merchav",
   "license": "MIT",
   "dependencies": {
-    "isellipsis": "^3.0.1"
+    "isellipsis": "^3.0.2"
   },
   "peerDependencies": {
     "react": ">=17"

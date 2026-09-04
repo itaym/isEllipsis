@@ -14,7 +14,8 @@ interface FontFaceSetLike {
 
 /**
  * Watch `element` and call `onChange` whenever its ellipsis state changes -
- * on container resize, text or attribute mutation, and web-font load.
+ * on container resize, text or attribute mutation, web-font load, and (for an
+ * `<input>`/`<textarea>`) focus/blur.
  *
  * `onChange` is called once synchronously with the initial measurement, then
  * only when the state actually changes. Returns an unsubscribe function.
@@ -81,6 +82,13 @@ export const observeEllipsis = (
     window.addEventListener('resize', schedule);
   }
 
+  // A focused <input>/<textarea> never paints an ellipsis (see measureEllipsis),
+  // so focus/blur - on their own, with no other DOM change - can flip the
+  // result. Neither ResizeObserver nor the MutationObserver above would
+  // otherwise notice that transition.
+  element.addEventListener('focus', schedule);
+  element.addEventListener('blur', schedule);
+
   return () => {
     disposed = true;
     if (frame) {
@@ -96,5 +104,7 @@ export const observeEllipsis = (
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', schedule);
     }
+    element.removeEventListener('focus', schedule);
+    element.removeEventListener('blur', schedule);
   };
 };

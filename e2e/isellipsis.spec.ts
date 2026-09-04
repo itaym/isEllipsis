@@ -180,6 +180,37 @@ test.describe('isellipsis (real browser, verified visually)', () => {
     expect((await expectAgree(page, '#t')).painted).toBe(false);
   });
 
+  test('INPUT: overflowing value shows no ellipsis while focused, even though it would if blurred', async ({ page }) => {
+    await render(page, `<input id="t" class="box" value="${LONG}" />`);
+    await page.locator('#t').focus();
+    const { bool, measurement } = await measure(page, '#t');
+    expect(bool).toBe(false);
+    expect(measurement.truncated).toBe(false);
+    // The oracle itself must agree there is genuinely nothing painted (not
+    // just that the library says so): toggling text-overflow while focused
+    // shouldn't change a single pixel, since neither value is ever painted
+    // as an ellipsis while the caret is being kept in view.
+    expect(await ellipsisIsPainted(page, '#t')).toBe(false);
+  });
+
+  test('INPUT: blurring after focus re-shows the ellipsis', async ({ page }) => {
+    await render(page, `<input id="t" class="box" value="${LONG}" />`);
+    await page.locator('#t').focus();
+    expect((await measure(page, '#t')).bool).toBe(false);
+
+    await page.locator('#t').blur();
+    const { bool } = await measure(page, '#t');
+    expect(bool).toBe(true);
+    expect(await ellipsisIsPainted(page, '#t')).toBe(true);
+  });
+
+  test('TEXTAREA: single-line overflowing value shows no ellipsis while focused', async ({ page }) => {
+    await render(page, `<textarea id="t" class="box" style="white-space:nowrap">${LONG}</textarea>`);
+    expect((await measure(page, '#t')).bool).toBe(true);
+    await page.locator('#t').focus();
+    expect((await measure(page, '#t')).bool).toBe(false);
+  });
+
   test('INPUT: placeholder measured only when usePlaceholder is true', async ({ page }) => {
     await render(page, `<input id="t" class="box" placeholder="${LONG}" />`);
     expect((await measure(page, '#t', true)).bool).toBe(true);

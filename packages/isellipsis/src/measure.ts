@@ -96,6 +96,12 @@ const inputTextWidth = (
  * Returns `{ truncated, overflow, axis }`. `overflow` is `NaN` on error.
  * Fonts must be loaded for the result to be accurate - `await
  * document.fonts.ready` first if you call this right after page load.
+ *
+ * For a focused `<input>`/`<textarea>`, this always reports `truncated: false`:
+ * the browser scrolls to keep the caret visible instead of painting the
+ * ellipsis while the field has focus, so there genuinely isn't one currently
+ * displayed - regardless of how much the value would overflow if the field
+ * were blurred.
  */
 export const measureEllipsis = (element: HTMLElement, options: MeasureOptions = {}): EllipsisMeasurement => {
   const usePlaceholder = options.usePlaceholder ?? true;
@@ -108,6 +114,15 @@ export const measureEllipsis = (element: HTMLElement, options: MeasureOptions = 
     // An ellipsis is only painted when `text-overflow` asks for one; the default
     // `clip` cuts mid-glyph with no `…`.
     if (styles.textOverflow.indexOf('ellipsis') === -1) {
+      return NOT_TRUNCATED;
+    }
+
+    // A focused <input>/<textarea> scrolls to keep the caret visible instead of
+    // painting `text-overflow: ellipsis` at all - true the instant it gains
+    // focus, before any typing or selection change. isEllipsis reports whether
+    // an ellipsis is *currently displayed*, not merely whether the content
+    // would overflow, so a focused field is never reported as truncated.
+    if (isInput && document.activeElement === element) {
       return NOT_TRUNCATED;
     }
 

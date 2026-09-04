@@ -63,6 +63,41 @@ describe('measureEllipsis gates', () => {
   });
 });
 
+describe('measureEllipsis on a focused input/textarea', () => {
+  const makeInput = (tag: 'input' | 'textarea'): HTMLInputElement | HTMLTextAreaElement => {
+    const el = document.createElement(tag);
+    Object.assign(el.style, { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '40px' });
+    el.value = 'x';
+    document.body.appendChild(el);
+    return el;
+  };
+
+  it('is never truncated while an <input> has focus, regardless of geometry', () => {
+    const input = makeInput('input');
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    expect(measureEllipsis(input)).toEqual({ truncated: false, overflow: 0, axis: null });
+  });
+
+  it('is never truncated while a <textarea> has focus, regardless of geometry', () => {
+    const textarea = makeInput('textarea');
+    textarea.focus();
+    expect(document.activeElement).toBe(textarea);
+    expect(measureEllipsis(textarea)).toEqual({ truncated: false, overflow: 0, axis: null });
+  });
+
+  it('does not short-circuit once the input is blurred again', () => {
+    const input = makeInput('input');
+    input.focus();
+    expect(measureEllipsis(input)).toEqual({ truncated: false, overflow: 0, axis: null });
+    input.blur();
+    expect(document.activeElement).not.toBe(input);
+    // Falls through to the real (canvas-based) measurement path instead of
+    // being short-circuited by the focus gate.
+    expect(measureEllipsis(input)).not.toEqual({ truncated: false, overflow: 0, axis: null });
+  });
+});
+
 describe('observeEllipsis', () => {
   it('emits an initial measurement synchronously and returns an unsubscribe', () => {
     const el = make({ textOverflow: 'clip' });
@@ -73,6 +108,28 @@ describe('observeEllipsis', () => {
     expect(states[0]).toEqual({ truncated: false, overflow: 0, axis: null });
     expect(typeof stop).toBe('function');
     expect(() => stop()).not.toThrow();
+  });
+
+  it('re-measures on focus and on blur, not just on resize/mutation', async () => {
+    const input = document.createElement('input');
+    Object.assign(input.style, { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '40px' });
+    input.value = 'x';
+    document.body.appendChild(input);
+
+    const states: unknown[] = [];
+    const stop = observeEllipsis(input, (s) => states.push(s));
+    expect(states).toHaveLength(1);
+
+    input.focus();
+    await new Promise((r) => setTimeout(r, 32));
+    expect(states).toHaveLength(2);
+    expect(states[1]).toEqual({ truncated: false, overflow: 0, axis: null });
+
+    input.blur();
+    await new Promise((r) => setTimeout(r, 32));
+    expect(states).toHaveLength(3);
+
+    stop();
   });
 
   it('stops emitting after unsubscribe', async () => {

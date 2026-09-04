@@ -1,6 +1,6 @@
 {
   "name": "isellipsis",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Find out if an HTML element is truncating its text with an ellipsis",
   "type": "module",
   "main": "./dist/index.cjs",
