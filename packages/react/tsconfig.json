@@ -3,7 +3,10 @@
   "compilerOptions": {
     "noEmit": true,
     "types": ["react"],
-    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@isellipsis/core": ["../core/src/index.ts"]
+    }
   },
   "include": ["src", "tsup.config.ts"]
 }
