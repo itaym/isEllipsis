@@ -1,16 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "declaration": true,
-    "outDir": "./lib",
-    "strict": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "lib": ["es5", "es6", "dom"],
-    "types": ["jest"],
-    "jsx": "react"
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "files": [],
+  "include": []
 }

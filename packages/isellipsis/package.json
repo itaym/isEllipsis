@@ -1,0 +1,45 @@
+{
+  "name": "isellipsis",
+  "version": "3.0.0",
+  "description": "Find out if an HTML element is truncating its text with an ellipsis",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/index.global.js",
+  "jsdelivr": "./dist/index.global.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "ellipsis",
+    "truncation",
+    "text-overflow",
+    "overflow",
+    "line-clamp",
+    "resize-observer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itaym/isEllipsis.git",
+    "directory": "packages/isellipsis"
+  },
+  "author": "Itay Merchav",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/itaym/isEllipsis/issues"
+  },
+  "homepage": "https://github.com/itaym/isEllipsis#readme"
+}
