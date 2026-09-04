@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "lib": ["es5", "es6", "dom"],
+    "types": ["jest"],
     "jsx": "react"
   },
   "include": ["src"],
