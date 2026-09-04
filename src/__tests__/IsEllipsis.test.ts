@@ -1,87 +1,51 @@
 import { isEllipsis } from '../index';
-//jsDom is shit, tests are for the protocol.
-const wasItSummer = 'Was it summer when the river ran dry or was it just another dam';
-const elements = {
-    inputElement: {} as HTMLInputElement,
-    divElement: {} as HTMLDivElement,
-    spanElement: {} as HTMLSpanElement
-};
 
-beforeEach((done) => {
-    elements.inputElement = document.createElement('input');
-    elements.divElement = document.createElement('div');
-    elements.spanElement = document.createElement('span');
+// jsdom performs no layout and has no 2d canvas, so these tests only cover the
+// "protocol": the export exists, the argument handling, and graceful failure.
+// The real behaviour is verified against a headless browser in e2e/.
 
-    elements.inputElement.style.overflow = 'hidden';
-    elements.inputElement.style.textOverflow = 'ellipsis';
-    elements.inputElement.style.whiteSpace = 'nowrap';
-    elements.inputElement.style.width = '120px';
+const LONG_TEXT = 'Was it summer when the river ran dry or was it just another dam that held the water back';
 
-    elements.divElement.style.overflow = 'hidden';
-    elements.divElement.style.textOverflow = 'ellipsis';
-    elements.divElement.style.whiteSpace = 'nowrap';
-    elements.divElement.style.width = '12px';
-    elements.divElement.style.display = 'block';
+let div: HTMLDivElement;
 
-    document.body.appendChild(elements.inputElement);
-    document.body.appendChild(elements.divElement);
-    document.body.appendChild(elements.spanElement);
-
-    done();
-})
-afterEach((done) =>{
-    document.body.removeChild(elements.inputElement);
-    document.body.removeChild(elements.divElement);
-    document.body.removeChild(elements.spanElement);
-
-    done();
-})
-
-test('isEllipsis to be defined', () => {
-    expect(isEllipsis).toBeDefined();
-})
-
-test('isEllipsis input element', () => {
-
-    const  { inputElement } = elements;
-
-    inputElement.value = wasItSummer;
-    inputElement.placeholder = '';
-
-    expect(isEllipsis(inputElement, false, Number)).toBe(0);
-    expect(isEllipsis(inputElement, true, Number)).toBe(0);
-
-    expect(isEllipsis(inputElement)).toBe(0);
-
-    expect(isEllipsis(undefined as any, false, Number)).toBe(NaN);
-
-    inputElement.value = '';
-    inputElement.placeholder = wasItSummer;
-
-    expect(isEllipsis(inputElement, false, Number)).toBe(0);
-    expect(isEllipsis(inputElement, true, Number)).toBe(0);
-
-    expect(isEllipsis(inputElement, true, Boolean)).toBe(false);
-    expect(isEllipsis(inputElement, true, Boolean)).toBe(false);
-    expect(isEllipsis(undefined as any, true, Boolean)).toBe(false);
+beforeEach(() => {
+  div = document.createElement('div');
+  div.style.overflow = 'hidden';
+  div.style.textOverflow = 'ellipsis';
+  div.style.whiteSpace = 'nowrap';
+  div.style.width = '80px';
+  div.innerHTML = LONG_TEXT;
+  document.body.appendChild(div);
 });
 
-test('isEllipsis div element', () => {
-
-    const { divElement } = elements;
-
-    divElement.innerHTML = `<span>${wasItSummer}</span>`;
-
-    expect(isEllipsis(divElement, false, Number)).toBe(0);
-    expect(isEllipsis(divElement, true, Boolean)).toBe(false);
+afterEach(() => {
+  document.body.removeChild(div);
 });
 
-test('isEllipsis span element', () => {
+test('isEllipsis is exported', () => {
+  expect(isEllipsis).toBeDefined();
+  expect(typeof isEllipsis).toBe('function');
+});
 
-    const { spanElement } = elements;
+test('returns a number by default and a boolean when asked', () => {
+  expect(typeof isEllipsis(div)).toBe('number');
+  expect(typeof isEllipsis(div, true, Boolean)).toBe('boolean');
+});
 
-    spanElement.innerHTML = `<span>${wasItSummer}</span>`;
+test('a non-clipping element can never show an ellipsis', () => {
+  div.style.overflow = 'visible';
+  div.style.overflowX = 'visible';
+  expect(isEllipsis(div, false, Number)).toBe(0);
+  expect(isEllipsis(div, false, Boolean)).toBe(false);
+});
 
-    expect(isEllipsis(spanElement, false, Number)).toBe(0);
-    expect(isEllipsis(spanElement, true, Boolean)).toBe(false);
+test('text-overflow other than ellipsis reports nothing', () => {
+  div.style.textOverflow = 'clip';
+  expect(isEllipsis(div, false, Number)).toBe(0);
+  expect(isEllipsis(div, false, Boolean)).toBe(false);
+});
+
+test('invalid element yields NaN / false', () => {
+  expect(isEllipsis(undefined as any, false, Number)).toBe(NaN);
+  expect(isEllipsis(undefined as any, false, Boolean)).toBe(false);
 });

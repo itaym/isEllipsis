@@ -6,19 +6,26 @@
 Find out if an HTML tag or an Input tag currently display ellipsis.
 
 ## Usage
-- import { isEllipsis } from "isellipsis";
-- let value = isEllipsis(HTMLElement, usePlaceholder, returnType);
-##### Variables
-- value : According the return type:
-  - Number: Greater from zero indicates an ellipsis is shown. (NaN indiates error).
-  - Boolean: true indicates an ellipsis is shown.
-- HTMLElement : Any HTML element such as DIV or Input etc.
-- usePlaceholder : (Optional) Indicates whenever to use the placeholder (default is true).
-- returnType: (Optional) Detarmine the type of the return. It can be Number or Boolean constructors (default is Number).
+```js
+import { isEllipsis } from "isellipsis";
+const value = isEllipsis(element, usePlaceholder, returnType);
+```
+##### Arguments
+- `element` : any HTML element - a `DIV`, `SPAN`, `INPUT`, `TEXTAREA`, etc.
+- `usePlaceholder` : *(optional, inputs only, default `true`)* measure the placeholder when the field is empty.
+- `returnType` : *(optional, default `Number`)* the `Number` or `Boolean` constructor.
+
+##### Return value
+- `Number` : the overflow in CSS pixels - a value `> 0` means an ellipsis is shown; `NaN` on error.
+- `Boolean` : `true` when an ellipsis is shown (overflow greater than ~0.5px).
 
 #### Overall
-The isEllipsis returns a zero or greater number or true (acoriding to the returnType) only if the HTMLElement is set up for ellipsis and the content overflows the element content area.
-So, if the returned value is zero or greater or true the HTMLElement displays ellipsis (...).
+`isEllipsis` reports whether the element is **currently** truncating its text with an ellipsis (`…`). It returns a positive number / `true` only when all of the following hold:
+- `text-overflow` is `ellipsis` (the default `clip` cuts text with no `…`);
+- there is a clipping context - `overflow` is not `visible` (inputs clip their own text regardless);
+- the text actually overflows the content box, **or** `-webkit-line-clamp` is set and the content exceeds it.
+
+Measurement is done without cloning the element or mutating the DOM: non-input elements are measured with a `Range`, inputs with canvas text metrics. Both give sub-pixel-accurate results, so there is no longer any need to use integer widths or `box-sizing: border-box`.
 
 #### Example
 ```
@@ -42,9 +49,15 @@ So, if the returned value is zero or greater or true the HTMLElement displays el
     }
 </script>    
  ```
-## Importent Note and explanation
-For the `isEllipsis` to work correctly. You must set your element `width` to an `integer` and `box-sizing` to  `border-box`. Otherwise there is a margin of error of 1 pixel!!! This due the fact that an `element` properties that `isEllipsis` relays upon such as `clientWidth`, `scrollWidth` and `offsetWidth` are integers. Even if the rendered width of the element is something like `120.8px` (which happens a lot), the `browser` rounds those numbers and `isEllipsis` has no way knowing it.
-If the content of the `element` **overflows** by more the correct answer will be returned for sure. As I tested it a lot, if you do like mentioned above, it will work 100% correctly.
+## Note
+The measurement relies on the correct font being loaded. If you call `isEllipsis`
+immediately after page load, `await document.fonts.ready` first, otherwise the
+width may be computed against a fallback font.
+
+Canvas text metrics model glyph advance widths, not full text shaping, so for
+inputs the result can be off by a fraction of a pixel with unusual
+`font-feature-settings` or heavy ligatures - hence the ~0.5px tolerance on the
+boolean result.
 
 ## Have a good productive day :)
 
@@ -52,4 +65,4 @@ If you like this package please consider donation <a href="https://paypal.me/Ita
 
 ---
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
-- Copyright 2015 © <a href="http://fvcproductions.com" target="_blank">FVCproductions</a>.
+- Copyright © 2020 Itay Merchav
