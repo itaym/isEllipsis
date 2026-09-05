@@ -1,6 +1,6 @@
 # isEllipsis
 
-![License](https://img.shields.io/badge/license-MIT-blue)
+![License](https://img.shields.io/npm/l/isellipsis?logo=open-source-initiative)
 
 Find out if an HTML element is **currently** truncating its text with an ellipsis (`…`) — a `DIV`, a `SPAN`, an `INPUT`, a `-webkit-line-clamp` block, anything.
 
@@ -24,6 +24,8 @@ import { useIsEllipsis, EllipsisTooltip } from '@isellipsis/react';
 
 ## `isellipsis`
 
+![npm version](https://img.shields.io/npm/v/isellipsis) ![bundle size](https://img.shields.io/bundlephobia/minzip/isellipsis)
+
 ```bash
 npm i isellipsis
 ```
@@ -46,6 +48,8 @@ box, or `-webkit-line-clamp` is set and exceeded.
 `await document.fonts.ready` before measuring right after page load.
 
 ## `@isellipsis/react`
+
+![npm version](https://img.shields.io/npm/v/%40isellipsis%2Freact) ![bundle size](https://img.shields.io/bundlephobia/minzip/%40isellipsis%2Freact)
 
 ```bash
 npm i @isellipsis/react
