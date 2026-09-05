@@ -24,7 +24,7 @@ import { useIsEllipsis, EllipsisTooltip } from '@isellipsis/react';
 
 ## `isellipsis`
 
-![npm version](https://img.shields.io/npm/v/isellipsis) ![bundle size](https://img.shields.io/bundlephobia/minzip/isellipsis)
+![npm version](https://img.shields.io/npm/v/isellipsis?logo=npm&logoColor=white) ![bundle size](https://img.shields.io/bundlephobia/minzip/isellipsis?logo=javascript&logoColor=white)
 
 ```bash
 npm i isellipsis
@@ -49,7 +49,7 @@ box, or `-webkit-line-clamp` is set and exceeded.
 
 ## `@isellipsis/react`
 
-![npm version](https://img.shields.io/npm/v/%40isellipsis%2Freact) ![bundle size](https://img.shields.io/bundlephobia/minzip/%40isellipsis%2Freact)
+![npm version](https://img.shields.io/npm/v/%40isellipsis%2Freact?logo=npm&logoColor=white) ![bundle size](https://img.shields.io/bundlephobia/minzip/%40isellipsis%2Freact?logo=javascript&logoColor=white)
 
 ```bash
 npm i @isellipsis/react
