@@ -2,7 +2,7 @@
   "name": "isellipsis-monorepo",
   "private": true,
   "type": "module",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "Find out if an HTML element is truncating its text with an ellipsis",
   "workspaces": [
     "packages/*",
