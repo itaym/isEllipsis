@@ -1,5 +1,7 @@
 # @isellipsis/react
 
+![npm version](https://img.shields.io/npm/v/%40isellipsis%2Freact?logo=npm&logoColor=white) ![bundle size](https://img.shields.io/bundlephobia/minzip/%40isellipsis%2Freact?logo=javascript&logoColor=white) ![License](https://img.shields.io/npm/l/%40isellipsis%2Freact?logo=open-source-initiative)
+
 React hook for detecting whether an element is truncating its text with an ellipsis (`…`) — reactive to resize, text changes and web-font load.
 
 ```bash

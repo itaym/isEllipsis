@@ -1,5 +1,7 @@
 # isellipsis
 
+![npm version](https://img.shields.io/npm/v/isellipsis?logo=npm&logoColor=white) ![bundle size](https://img.shields.io/bundlephobia/minzip/isellipsis?logo=javascript&logoColor=white) ![License](https://img.shields.io/npm/l/isellipsis?logo=open-source-initiative)
+
 Find out if an HTML element is **currently** truncating its text with an ellipsis (`…`) — framework-agnostic, no dependencies.
 
 ```bash
